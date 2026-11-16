@@ -110,9 +110,11 @@ test('환경 변수가 있으면 그 실행 파일만, 배포본이면 리소스
   const base = { packaged: false, resourcesPath: '/res', appRoot: '/repo/desktop', platform: 'darwin', env: {} };
   assert.deepEqual(backend.backendCandidates({ ...base, env: { TACET_BIN: '/x/c' } }), ['/x/c']);
   assert.deepEqual(backend.backendCandidates({ ...base, packaged: true, platform: 'win32' }), [path.join('/res', 'bin', 'tacet.exe')]);
+  // 저장소 경로는 path.resolve로 만든다 — Windows에서는 드라이브 문자(D: 등)가 붙는다.
+  const repo = path.resolve('/repo');
   assert.deepEqual(backend.backendCandidates(base), [
-    path.join('/repo', 'target', 'release', 'tacet'),
-    path.join('/repo', 'target', 'debug', 'tacet'),
+    path.join(repo, 'target', 'release', 'tacet'),
+    path.join(repo, 'target', 'debug', 'tacet'),
   ]);
 });
 
