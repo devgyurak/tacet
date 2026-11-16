@@ -1,0 +1,42 @@
+# cargo-deny 의존성 정책 (AGENTS.md §3.7). Cargo 작업 공간이 생기면 ./scripts/verify.sh와 CI가
+# `cargo deny check licenses bans sources`를 돌린다.
+#
+# 프로젝트 라이선스는 아직 정하지 않았다. 어떤 라이선스를 골라도 막히지 않도록 허용형 라이선스만
+# 받는다. GPL / LGPL / AGPL / SSPL / 약한 copyleft 크레이트는 들이지 않는다. 목록에 라이선스를 더하는
+# 것은 `decision` 이슈이지 지나가며 고칠 일이 아니다.
+
+[graph]
+all-features = true
+# 테스트에서만 쓰는 의존성은 배포물에 들어가지 않는다.
+exclude-dev = true
+
+[licenses]
+version = 2
+allow = [
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "MIT",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "Zlib",
+  "Unicode-3.0",
+  "CC0-1.0",
+  "BSL-1.0",
+]
+confidence-threshold = 0.9
+
+# 우리 크레이트는 라이선스를 정하기 전까지 배포하지 않는다(publish = false). 비공개로 보고 검사에서 뺀다.
+[licenses.private]
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+# 작업 공간 안의 경로 의존(배포하지 않는 비공개 크레이트)은 버전 없이 쓴다.
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

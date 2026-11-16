@@ -1,0 +1,123 @@
+# Codex 명령 정책 (execpolicy). AGENTS.md §7 "권한 정책은 하나"를 Codex 쪽에 둔 것이다.
+# .claude/settings.json의 ask는 여기서 prompt, deny는 forbidden이다. 둘이 어긋나면
+# scripts/check_agent_config.py가 실패한다. 허용 목록은 개인 승인 정책에 맡긴다.
+
+# --- 바깥으로 나가거나 의존성을 바꾸는 명령: 묻는다 -----------------------------------
+
+prefix_rule(
+    pattern = ["cargo", "add"],
+    decision = "prompt",
+    justification = "의존성 추가는 라이선스(deny.toml)와 core 금지 목록을 확인한 뒤에 한다 (AGENTS.md §4).",
+)
+
+prefix_rule(
+    pattern = ["cargo", "install"],
+    decision = "prompt",
+    justification = "도구 설치는 사용자 환경을 바꾼다.",
+)
+
+prefix_rule(
+    pattern = ["cargo", "update"],
+    decision = "prompt",
+    justification = "버전 올리기는 별도 UPT: PR이다.",
+)
+
+prefix_rule(
+    pattern = ["cargo", "insta", "accept"],
+    decision = "prompt",
+    justification = "스냅숏은 증거다. 일괄 승인하지 않는다 (AGENTS.md §5.6).",
+)
+
+prefix_rule(
+    pattern = ["rustup"],
+    decision = "prompt",
+    justification = "툴체인은 rust-toolchain.toml에 고정돼 있다.",
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", "create"],
+    decision = "prompt",
+    justification = "결정 이슈는 요청받았을 때만 초안을 쓴다 (AGENTS.md §6).",
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "create"],
+    decision = "prompt",
+    justification = "PR은 바깥으로 나가는 동작이다.",
+)
+
+# --- 파괴적 명령: 거부한다 ------------------------------------------------------------
+
+prefix_rule(
+    pattern = ["git", "push", "--force"],
+    decision = "forbidden",
+    justification = "공유 기록을 덮어쓴다.",
+)
+
+prefix_rule(
+    pattern = ["git", "push", "-f"],
+    decision = "forbidden",
+    justification = "공유 기록을 덮어쓴다.",
+)
+
+prefix_rule(
+    pattern = ["rm", "-rf"],
+    decision = "forbidden",
+    justification = "되돌릴 수 없는 삭제다.",
+)
+
+# --- 송신 도구: 거부한다 (AGENTS.md §3.1, 전파법) ---------------------------------------
+
+prefix_rule(
+    pattern = ["aireplay-ng"],
+    decision = "forbidden",
+    justification = "프레임 주입·디어스 도구다. 이 도구는 송신하지 않는다.",
+)
+
+prefix_rule(
+    pattern = ["airbase-ng"],
+    decision = "forbidden",
+    justification = "가짜 AP 도구다. 이 도구는 송신하지 않는다.",
+)
+
+prefix_rule(
+    pattern = ["mdk3"],
+    decision = "forbidden",
+    justification = "비콘 플러딩·디어스 도구다. 이 도구는 송신하지 않는다.",
+)
+
+prefix_rule(
+    pattern = ["mdk4"],
+    decision = "forbidden",
+    justification = "비콘 플러딩·디어스 도구다. 이 도구는 송신하지 않는다.",
+)
+
+prefix_rule(
+    pattern = ["wifiphisher"],
+    decision = "forbidden",
+    justification = "가짜 AP 도구다. 이 도구는 송신하지 않는다.",
+)
+
+prefix_rule(
+    pattern = ["hostapd"],
+    decision = "forbidden",
+    justification = "AP를 띄우면 비콘을 송신한다. 시나리오는 합성 관측값으로 만든다.",
+)
+
+prefix_rule(
+    pattern = ["create_ap"],
+    decision = "forbidden",
+    justification = "AP를 띄우면 비콘을 송신한다. 시나리오는 합성 관측값으로 만든다.",
+)
+
+prefix_rule(
+    pattern = ["rpitx"],
+    decision = "forbidden",
+    justification = "RF 송신 도구다. 이 도구는 송신하지 않는다.",
+)
+
+prefix_rule(
+    pattern = ["sendiq"],
+    decision = "forbidden",
+    justification = "IQ 송신 도구다. 이 도구는 송신하지 않는다.",
+)

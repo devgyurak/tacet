@@ -1,0 +1,28 @@
+[package]
+name = "tacet-net"
+description = "센서↔서버 통신: 프로토콜, TLS, 페어링, mDNS 서버 찾기"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+tacet-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+sha2.workspace = true
+hmac.workspace = true
+hex.workspace = true
+tokio.workspace = true
+rustls.workspace = true
+tokio-rustls.workspace = true
+rcgen.workspace = true
+mdns-sd.workspace = true
+rand.workspace = true
+
+[dev-dependencies]
+tacet-core = { workspace = true, features = ["testkit"] }
+
+[lints]
+workspace = true

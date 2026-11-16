@@ -1,0 +1,34 @@
+name: agents
+
+# 에이전트 설정 자체를 지킨다: 끊어진 포인터, 서브에이전트 본문 어긋남, 스크립트가 사라진 훅은
+# 기여자의 컴퓨터가 아니라 여기(그리고 PR)에서 실패한다.
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agents-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  config:
+    name: agent-config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: 에이전트 설정 검사
+        run: python3 scripts/check_agent_config.py
+
+      - name: 훅 selftest
+        run: python3 scripts/agent_hooks/selftest.py

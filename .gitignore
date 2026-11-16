@@ -1,0 +1,60 @@
+# Rust 빌드 산출물
+/target/
+**/*.rs.bk
+*.pdb
+
+# 무선 캡처, IQ 녹음, Kismet DB, devtools 관측 녹화는 남의 식별자와 통신 흔적을 담는다. 합성이라도 커밋하지 않는다 (AGENTS.md §3.3).
+# 누군가 `git add -f`로 추적해도 CI의 수동성 스캔이 실패한다.
+*.pcap
+*.pcapng
+*.cap
+*.btsnoop
+*.iq
+*.cfile
+*.cu8
+*.cs8
+*.cs16
+*.cf32
+*.sigmf-data
+*.sigmf-meta
+*.kismet
+*.kismet-journal
+*.obslog
+
+# 실행 중 만들어지는 세션 데이터와 보고서는 저장소 밖에 둔다 (AGENTS.md §2 규칙 12).
+/sessions/
+/reports/
+
+# 코드 서명 인증서·키는 CI 비밀값으로만 쓴다 (AGENTS.md §7).
+*.p12
+*.pfx
+*.p8
+*.keystore
+*.mobileprovision
+*.provisionprofile
+
+# 화면(Electron) 의존성과 배포 때 넣는 백엔드 실행 파일
+node_modules/
+dist/
+/desktop/resources/bin/
+
+# 훅 스크립트의 Python 캐시
+__pycache__/
+*.py[cod]
+
+# 로컬
+.DS_Store
+*.swp
+.env
+.env.*
+
+# 에이전트 설정과 .agents/skills 링크는 모든 클론이 같은 워크플로를 쓰도록 추적한다. 사용자의 전역
+# 제외 설정이 `.claude/`를 무시하는 경우가 많아 여기서 다시 포함한다.
+!.claude/
+!.claude/**
+!.codex/
+!.codex/**
+!.agents/
+
+# 컴퓨터마다 다른 에이전트 권한(Claude Code가 `/permissions` 승인으로 쓰는 파일)은 개인 설정이다.
+.claude/settings.local.json

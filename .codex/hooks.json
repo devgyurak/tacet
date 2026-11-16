@@ -1,0 +1,66 @@
+{
+  "description": "Tacet(시험장 무선 기기 탐지기) 훅. 스크립트는 scripts/agent_hooks/에 있고 Claude Code와 공유한다. 하위 디렉터리에서도 동작하도록 경로는 git 루트 기준이다.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/agent_hooks/session_context.py\" --tool codex",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|apply_patch|exec_command|write_stdin",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/agent_hooks/guard_passive.py\" --tool codex",
+            "statusMessage": "수동 감지 규칙 확인 중...",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "apply_patch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/agent_hooks/format_rust.py\" --tool codex",
+            "statusMessage": "rustfmt 적용 중...",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/agent_hooks/check_architecture.py\" --tool codex",
+            "statusMessage": "아키텍처 규칙 확인 중...",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/agent_hooks/check_passive.py\" --tool codex",
+            "statusMessage": "송신·디코딩·개인정보 규칙 확인 중...",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/agent_hooks/check_tests.py\" --tool codex",
+            "statusMessage": "테스트 규칙 확인 중...",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$(git rev-parse --show-toplevel)/scripts/agent_hooks/check_language.py\" --tool codex",
+            "statusMessage": "한국어 전용 규칙 확인 중...",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

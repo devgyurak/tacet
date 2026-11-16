@@ -1,0 +1,80 @@
+name: ci
+
+# 에이전트나 기여자가 로컬에서 돌리는 것과 같은 게이트, ./scripts/verify.sh를 OS마다 돌린다. 릴리스 빌드는 여기서
+# 하지 않는다 — main의 vX.Y.Z 태그에서 release.yml이 이 워크플로를 불러 테스트한 뒤 빌드한다.
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+  # release.yml이 빌드 전에 같은 테스트를 돌릴 때 부른다.
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # 설계 §2: 배포 대상은 Windows와 macOS이고, 리눅스는 개발·검증용 빌드와 devtools를 지킨다.
+        include:
+          - { name: windows, os: windows-latest }
+          - { name: macos, os: macos-latest }
+          - { name: linux, os: ubuntu-latest }
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      # 화면(desktop/, Electron)의 순수 함수 시험(node --test)에 쓴다.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      # rustup은 rust-toolchain.toml에 고정한 정확한 버전과 구성 요소를 설치한다 (AGENTS.md §4).
+      - name: Rust 툴체인 (고정)
+        run: rustup toolchain install
+
+      - name: cargo-nextest · cargo-llvm-cov · cargo-deny
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny
+
+      # 선택 기능의 시스템 라이브러리: sdr은 SoapySDR.
+      - name: 시스템 라이브러리 (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libsoapysdr-dev
+
+      - name: 시스템 라이브러리 (macOS)
+        if: runner.os == 'macOS'
+        run: brew install soapysdr
+
+      # TODO(phase3): Windows의 SoapySDR 설치 방법(vcpkg 또는 공식 빌드)을 정하면 verify.sh의 Windows 예외를 없앤다.
+      - name: 시스템 라이브러리 (Windows)
+        if: runner.os == 'Windows'
+        run: echo "Windows는 기본 빌드만 검사한다(선택 기능 제외)"
+
+      # 의존성을 빌드하는 시간을 줄인다. develop에서만 저장해서 PR이 캐시 할당량을 채우지 않게 한다.
+      - name: cargo 의존성 캐시
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: test
+          save-if: ${{ github.ref == 'refs/heads/develop' }}
+
+      - name: Verify
+        run: ./scripts/verify.sh

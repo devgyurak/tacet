@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- 이 화면은 자기 파일만 쓴다: 바깥 스크립트·글꼴·연결 없음(관측 데이터는 시험장 밖으로 나가지 않는다). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+    <title>Tacet</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app" aria-live="polite"></div>
+    <script src="view.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

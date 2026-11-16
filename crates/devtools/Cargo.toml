@@ -1,0 +1,29 @@
+[package]
+name = "tacet-devtools"
+description = "개발 도구(macOS·리눅스): 관측 녹화·재생"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "tacet-devtools"
+path = "src/main.rs"
+
+[dependencies]
+tacet-core.workspace = true
+tacet-collector-ble.workspace = true
+tacet-collector-wifi.workspace = true
+tacet-collector-sdr.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+anyhow.workspace = true
+tokio = { workspace = true, features = ["fs"] }
+rand.workspace = true
+
+[dev-dependencies]
+tacet-core = { workspace = true, features = ["testkit"] }
+
+[lints]
+workspace = true

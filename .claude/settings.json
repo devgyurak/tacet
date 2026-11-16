@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(./scripts/verify.sh:*)",
+      "Bash(python3 scripts/:*)",
+      "Bash(cargo fmt:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(cargo check:*)",
+      "Bash(cargo build:*)",
+      "Bash(cargo test:*)",
+      "Bash(cargo nextest:*)",
+      "Bash(cargo tree:*)",
+      "Bash(cargo doc:*)",
+      "Bash(cargo llvm-cov:*)",
+      "Bash(cargo deny:*)",
+      "Bash(cargo metadata:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(rg:*)",
+      "Bash(wc:*)"
+    ],
+    "ask": [
+      "Bash(cargo add:*)",
+      "Bash(cargo install:*)",
+      "Bash(cargo update:*)",
+      "Bash(cargo insta accept:*)",
+      "Bash(rustup:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh pr create:*)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(rm -rf:*)",
+      "Bash(aireplay-ng:*)",
+      "Bash(airbase-ng:*)",
+      "Bash(mdk3:*)",
+      "Bash(mdk4:*)",
+      "Bash(wifiphisher:*)",
+      "Bash(hostapd:*)",
+      "Bash(create_ap:*)",
+      "Bash(rpitx:*)",
+      "Bash(sendiq:*)"
+    ]
+  },
+  "env": {
+    "RUST_BACKTRACE": "1"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/scripts/agent_hooks/session_context.py\" --tool claude",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Read|Write|Edit|MultiEdit|NotebookEdit|Bash|Glob|Grep|WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/scripts/agent_hooks/guard_passive.py\" --tool claude",
+            "timeout": 15,
+            "statusMessage": "수동 감지 규칙 확인 중..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/scripts/agent_hooks/format_rust.py\" --tool claude",
+            "timeout": 60,
+            "statusMessage": "rustfmt 적용 중..."
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/scripts/agent_hooks/check_architecture.py\" --tool claude",
+            "timeout": 30,
+            "statusMessage": "아키텍처 규칙 확인 중..."
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/scripts/agent_hooks/check_passive.py\" --tool claude",
+            "timeout": 30,
+            "statusMessage": "송신·디코딩·개인정보 규칙 확인 중..."
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/scripts/agent_hooks/check_tests.py\" --tool claude",
+            "timeout": 30,
+            "statusMessage": "테스트 규칙 확인 중..."
+          },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/scripts/agent_hooks/check_language.py\" --tool claude",
+            "timeout": 30,
+            "statusMessage": "한국어 전용 규칙 확인 중..."
+          }
+        ]
+      }
+    ]
+  }
+}

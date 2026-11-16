@@ -1,0 +1,25 @@
+# 단독 모드: 교실 하나, 노트북 한 대. 기준선 3분.
+mode = "standalone"
+
+[sensor]
+id = "3-2-앞"
+room = "3-2"
+position = "Front"
+
+[detector]
+baseline_ms = 180000
+
+# 보정값은 교실마다 실측한다(field-test 스킬). 비워 두면 경계 판정을 하지 않고 "보정 필요"를 띄운다.
+[[layout.rooms]]
+id = "3-2"
+sensors = [{ id = "3-2-앞", position = "Front", inside_boundary_dbm = -75, wifi_inside_boundary_dbm = -65 }]
+
+# 수거폰 보관 위치(교실 앞). 이 센서에서 이 세기 범위로 보이면 감점한다.
+[[layout.storage]]
+sensor = "3-2-앞"
+min_dbm = -50
+max_dbm = -35
+
+# 감독관 장비와 사전 신고한 의료기기. 예시 주소는 문서용 범위다.
+[whitelist]
+entries = [{ Mac = [0, 0, 94, 0, 83, 1] }]

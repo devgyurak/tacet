@@ -1,0 +1,26 @@
+# 릴리스 노트 자동 생성 분류(GitHub). 라벨은 커밋 접두사에서 온다 — .claude/skills/commit/SKILL.md §7.
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+  categories:
+    - title: ✨ 기능
+      labels:
+        - feature
+    - title: 🐛 버그 수정
+      labels:
+        - bug
+    - title: 📝 문서
+      labels:
+        - documentation
+    - title: 📦 의존성
+      labels:
+        - dependencies
+    - title: 🧹 내부
+      labels:
+        - refactor
+        - ci
+        - test
+    - title: 기타
+      labels:
+        - "*"

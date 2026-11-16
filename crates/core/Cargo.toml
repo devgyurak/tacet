@@ -1,0 +1,25 @@
+[package]
+name = "tacet-core"
+description = "시험장 무선 기기 탐지기의 순수 판정 로직: 관측값, 기준선, 규칙, 점수, 위치 판정"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[features]
+# 합성 관측·보고서 빌더. 다른 크레이트의 테스트와 devtools가 쓴다.
+testkit = []
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+sha2.workspace = true
+hex.workspace = true
+
+[dev-dependencies]
+tacet-core = { path = ".", features = ["testkit"] }
+proptest.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

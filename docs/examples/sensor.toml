@@ -1,0 +1,16 @@
+# 센서 모드: 교실 앞·뒤 노트북. 서버 주소를 비우면 내부망 mDNS로 찾는다.
+mode = "sensor"
+
+[sensor]
+id = "3-2-뒤"
+room = "3-2"
+position = "Back"
+
+[remote]
+code = "서버 화면의 센서 페어링 코드(10자리)"
+# 서버 화면의 지문을 적어 두면 첫 연결부터 그 서버에만 붙는다. 비우면 첫 연결의 지문을 화면에서 꼭 대조한다.
+# fingerprint = "서버 화면의 64자리 지문"
+
+# HackRF가 있으면 업링크 에너지(R7)도 잰다.
+[sdr]
+device_args = "driver=hackrf"

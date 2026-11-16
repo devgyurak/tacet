@@ -1,0 +1,61 @@
+[workspace]
+resolver = "3"
+members = [
+  "crates/core",
+  "crates/net",
+  "crates/dashboard",
+  "crates/collector-sdr",
+  "crates/collector-ble",
+  "crates/collector-wifi",
+  "crates/app",
+  "crates/devtools",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+# 라이선스는 아직 정하지 않았다(docs/STATUS.md). 정할 때까지 어떤 패키지도 배포하지 않는다.
+publish = false
+repository = "https://github.com/devgyurak/tacet"
+
+[workspace.dependencies]
+tacet-core = { path = "crates/core" }
+tacet-collector-ble = { path = "crates/collector-ble" }
+tacet-collector-wifi = { path = "crates/collector-wifi" }
+tacet-collector-sdr = { path = "crates/collector-sdr" }
+tacet-net = { path = "crates/net" }
+tacet-dashboard = { path = "crates/dashboard" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+sha2 = "0.10"
+hmac = "0.12"
+hex = "0.4"
+toml = "0.9"
+anyhow = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "net", "io-util"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12", "logging"] }
+rcgen = { version = "0.14", default-features = false, features = ["crypto", "ring"] }
+mdns-sd = "0.17"
+axum = "0.8"
+tokio-stream = { version = "0.1", features = ["sync"] }
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+rand = "0.9"
+futures = "0.3"
+proptest = { version = "1", default-features = false, features = ["std"] }
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+undocumented_unsafe_blocks = "deny"
+# 자식이 있는 모듈은 `dir/mod.rs`다. `dir.rs`를 `dir/` 옆에 두지 않는다 (AGENTS.md §4).
+self_named_module_files = "deny"
+
+# 테스트·커버리지 빌드를 빠르게 하되 overflow-checks와 debug-assertions는 유지한다.
+[profile.dev]
+opt-level = 1
