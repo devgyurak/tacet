@@ -9,6 +9,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 PYTHON="${PYTHON:-python3}"
 export PYTHONDONTWRITEBYTECODE=1
+# 게이트 출력은 한국어다. Windows 콘솔 기본 코드 페이지(cp1252 등)로는 찍지 못해 멈추므로 UTF-8로 고정한다.
+export PYTHONUTF8=1 PYTHONIOENCODING=utf-8
 
 step() { printf '\n▶ %s\n' "$1"; }
 skip() { printf '  SKIPPED: %s\n' "$1"; }
@@ -32,7 +34,8 @@ if [ -f desktop/package.json ]; then
   # 화면(Electron)의 순수 함수 시험. 의존성 설치 없이 Node 내장 시험 도구로 돈다.
   step "화면 시험 (desktop, node --test)"
   command -v node >/dev/null 2>&1 || { echo "node가 없다 — Node.js 22 이상을 설치한다" >&2; exit 1; }
-  (cd desktop && node --test test/)
+  # 폴더 경로는 Node 22가 모듈로 읽어 실패한다 — 파일 패턴을 따옴표로 넘겨 node가 직접 펼치게 한다(셸·OS와 무관).
+  (cd desktop && node --test 'test/*.test.js')
 fi
 
 if [ ! -f Cargo.toml ]; then
