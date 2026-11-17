@@ -14,7 +14,7 @@
 | 1 | 앱(단독 모드), 권한 점검, BLE + Wi-Fi(Windows 수동 BLE 스캔, WLAN API / macOS CoreBluetooth, CoreWLAN), 기준선, R1–R6 | Windows 노트북 한 대로 숨긴 핫스팟과 폰 BLE 탐지 / macOS Wi-Fi 실측 | 완료(Windows 코드는 교차 컴파일 검사만) | Windows 실기 시험, macOS 버전별 CoreWLAN 실측 |
 | 2 | (뺌) 블루투스 연결 탐지 | 범위에서 뺌 — 아래 "결정됨" 참고 | — | — |
 | 2.5 | 센서/서버/본부 화면 보기(개발자 모드), 웹 대시보드, 다교실 위치 판정 | 인접 3개 교실 시범에서 옆 교실 기기를 올바른 교실로 배정 | 완료 — 루프백 종단 시험(센서 → TLS → 서버 판정 → 본부 화면 알림) 통과 | 3개 교실 실측, 신뢰도 기준 보정 |
-| 2.9 | 코드 서명, 공증, 설치 파일, 점검 모드 | 서명된 설치 파일로 새 PC에서 온보딩부터 탐지까지 | `vX.Y.Z` 태그 릴리스가 서명 없는 macOS 유니버설 `.dmg`와 Windows `.zip`을 만들고 실행 확인(`docs/platform/packaging.md`) | 인증서·Apple 계정, `.msi`·`.dmg` |
+| 2.9 | 코드 서명, 공증, 설치 파일, 점검 모드 | 서명된 설치 파일로 새 PC에서 온보딩부터 탐지까지 | `vX.Y.Z` 태그 릴리스가 서명·공증한 macOS 유니버설 `.dmg`와 서명 없는 Windows `.exe`·`.zip`을 만들고 실행 확인(`docs/platform/packaging.md`) | Windows Authenticode 인증서, 서명된 설치 파일로 새 PC 실기 |
 | 3 | SDR 업링크 에너지(R7) | 폰 사진 업로드 버스트 탐지 | 완료(`sdr` 기능, 합성 신호로 시험) | HackRF 실측, 이득·버스트 문턱 |
 | 4 | 6GHz 검증, 갤럭시 글래스 | 6GHz 전용 연결 탐지 | 6GHz 채널·대역 처리 완료 | 6E 칩 노트북·기기 실측 |
 

@@ -47,13 +47,15 @@ shasum -a 256 -c SHA256SUMS.txt --ignore-missing          # macOS
 Get-FileHash .\tacet-<버전>-win-x64.exe -Algorithm SHA256  # Windows: SHA256SUMS.txt의 값과 비교
 ```
 
-> **베타는 코드 서명이 없습니다.** 처음 열 때 운영체제가 막을 수 있습니다.
-> - **macOS** — `.dmg`의 Tacet을 응용 프로그램 폴더로 옮긴 뒤 열어 보고, 막히면 시스템 설정 > 개인정보 보호 및 보안에서
->   "그래도 열기"를 누릅니다.
-> - **Windows** — SmartScreen 창이 뜨면 "추가 정보" → "실행"을 누릅니다.
+> **코드 서명** — macOS 판은 v0.1.1부터 Developer ID로 서명하고 Apple 공증을 받았습니다. Windows 판은 아직 코드 서명이
+> 없습니다.
+> - **macOS** — `.dmg`의 Tacet을 응용 프로그램 폴더로 옮긴 뒤 엽니다. 인터넷이 없는 노트북에서도 열리도록 공증 확인서를
+>   파일에 붙였습니다.
+> - **Windows** — 처음 열 때 SmartScreen 창이 뜰 수 있습니다. "추가 정보" → "실행"을 누릅니다.
 >
-> macOS가 와이파이 주소를 알려 주려면 위치 권한과 Developer ID 서명이 필요해서, 베타의 macOS 판은 휴대폰 핫스팟(숨긴 핫스팟
-> 포함)을 놓칠 수 있습니다. 그때는 화면의 문제 안내에 그 사실이 보입니다.
+> macOS는 위치 권한과 Developer ID 서명이 있어야 와이파이 주소를 알려 줍니다. 서명이 없는 v0.1.0의 macOS 판은 휴대폰
+> 핫스팟(숨긴 핫스팟 포함)을 놓칠 수 있으니 v0.1.1 이후 판을 쓰세요. 와이파이 주소를 받지 못하면 화면의 문제 안내에 그 사실이
+> 보입니다.
 
 ## 쓰는 법
 
@@ -102,7 +104,7 @@ npm run demo                       # 장비 없이 시연 모델로 화면만 �
 
 ```bash
 ./scripts/verify.sh                # 전체 게이트: 형식·린트·라이선스·테스트·커버리지(85%)·수동성·언어 검사
-./scripts/package_macos.sh         # macOS 유니버설 .dmg (임시 서명)
+./scripts/package_macos.sh         # macOS 유니버설 .dmg (임시 서명, 배포 서명·공증은 docs/platform/packaging.md)
 ./scripts/package_windows.sh       # Windows 설치 프로그램 .exe와 .zip (Git Bash에서)
 ```
 

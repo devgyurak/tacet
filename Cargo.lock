@@ -1722,7 +1722,7 @@ dependencies = [
 
 [[package]]
 name = "tacet"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "hex",
@@ -1744,7 +1744,7 @@ dependencies = [
 
 [[package]]
 name = "tacet-collector-ble"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "btleplug",
  "futures",
@@ -1757,7 +1757,7 @@ dependencies = [
 
 [[package]]
 name = "tacet-collector-sdr"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "proptest",
  "rustfft",
@@ -1768,7 +1768,7 @@ dependencies = [
 
 [[package]]
 name = "tacet-collector-wifi"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "objc2 0.6.5",
  "objc2-core-location",
@@ -1782,7 +1782,7 @@ dependencies = [
 
 [[package]]
 name = "tacet-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "hex",
  "proptest",
@@ -1795,7 +1795,7 @@ dependencies = [
 
 [[package]]
 name = "tacet-dashboard"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "axum",
  "futures",
@@ -1811,7 +1811,7 @@ dependencies = [
 
 [[package]]
 name = "tacet-devtools"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "rand 0.9.5",
@@ -1827,7 +1827,7 @@ dependencies = [
 
 [[package]]
 name = "tacet-net"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "hex",
  "hmac",

@@ -1,7 +1,7 @@
 {
   "name": "tacet-desktop",
   "productName": "Tacet",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Tacet(시험장 무선 기기 탐지기) 화면(Electron). 판정은 Rust 백엔드가 한다.",
   "main": "src/main.js",
@@ -51,6 +51,8 @@
         }
       ],
       "x64ArchFiles": "Contents/Resources/bin/*",
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
       "extendInfo": {
         "CFBundleDisplayName": "Tacet",
         "NSBluetoothAlwaysUsageDescription": "시험 중 교실에 나타난 휴대폰과 스마트 안경의 블루투스 신호를 받아 감독관에게 확인 필요 알림을 줍니다. macOS의 블루투스 스캔은 일반 기기와 같은 짧은 스캔 요청을 보낼 수 있습니다. 기기에 연결하거나 통신 내용을 읽지 않습니다.",
