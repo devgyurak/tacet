@@ -31,10 +31,10 @@
 
 [GitHub 릴리스](https://github.com/devgyurak/tacet/releases)에서 내려받습니다.
 
-| 운영체제 | 파일 |
+| 운영체제 | 받는 곳 |
 |---|---|
-| Windows 11 (x64) | `tacet-<버전>-win-x64.exe`(설치 프로그램) 또는 `.zip` |
-| macOS (Apple 실리콘·Intel) | `tacet-<버전>-mac-universal.dmg` |
+| Windows 11 (x64) | **Microsoft Store**(표준, 게시 준비 중). Store를 쓸 수 없는 PC는 릴리스의 `tacet-<버전>-win-x64.exe`(설치 프로그램) 또는 `.zip` |
+| macOS (Apple 실리콘·Intel) | 릴리스의 `tacet-<버전>-mac-universal.dmg` |
 
 공식 릴리스 페이지에서 받은 파일만 여세요. 열기 전에 함께 올린 `SHA256SUMS.txt`로 내려받은 파일이 온전한지 확인합니다
 (전송 오류 확인용이며, 코드 서명을 대신하지는 않습니다).
@@ -47,11 +47,12 @@ shasum -a 256 -c SHA256SUMS.txt --ignore-missing          # macOS
 Get-FileHash .\tacet-<버전>-win-x64.exe -Algorithm SHA256  # Windows: SHA256SUMS.txt의 값과 비교
 ```
 
-> **코드 서명** — macOS 판은 v0.1.1부터 Developer ID로 서명하고 Apple 공증을 받았습니다. Windows 판은 아직 코드 서명이
-> 없습니다.
+> **코드 서명** — macOS 판은 v0.1.1부터 Developer ID로 서명하고 Apple 공증을 받았습니다. Windows는 Microsoft Store 판이
+> 표준이고 Microsoft가 서명합니다. 릴리스의 Windows `.exe`·`.zip`은 코드 서명이 없습니다.
 > - **macOS** — `.dmg`의 Tacet을 응용 프로그램 폴더로 옮긴 뒤 엽니다. 인터넷이 없는 노트북에서도 열리도록 공증 확인서를
 >   파일에 붙였습니다.
-> - **Windows** — 처음 열 때 SmartScreen 창이 뜰 수 있습니다. "추가 정보" → "실행"을 누릅니다.
+> - **Windows** — Store 판은 그대로 설치됩니다. 릴리스의 `.exe`는 처음 열 때 SmartScreen 창이 뜰 수 있습니다. "추가 정보" →
+>   "실행"을 누릅니다.
 >
 > macOS는 위치 권한과 Developer ID 서명이 있어야 와이파이 주소를 알려 줍니다. 서명이 없는 v0.1.0의 macOS 판은 휴대폰
 > 핫스팟(숨긴 핫스팟 포함)을 놓칠 수 있으니 v0.1.1 이후 판을 쓰세요. 와이파이 주소를 받지 못하면 화면의 문제 안내에 그 사실이
@@ -88,7 +89,7 @@ Get-FileHash .\tacet-<버전>-win-x64.exe -Algorithm SHA256  # Windows: SHA256SU
   운영체제 알림에도 기기 주소·와이파이 이름 같은 식별자를 넣지 않습니다.
 
 실제 시험장에 쓰려면 주관 기관의 승인과 법률 검토(전파법, 통신비밀보호법, 개인정보 보호)가 필요합니다. 전체 규칙은
-[`AGENTS.md`](AGENTS.md) §3에 있습니다.
+[`AGENTS.md`](AGENTS.md) §3에, 앱이 보고 저장하는 것은 [개인정보 처리방침](docs/privacy.md)에 있습니다.
 
 ## 개발
 
@@ -105,7 +106,7 @@ npm run demo                       # 장비 없이 시연 모델로 화면만 �
 ```bash
 ./scripts/verify.sh                # 전체 게이트: 형식·린트·라이선스·테스트·커버리지(85%)·수동성·언어 검사
 ./scripts/package_macos.sh         # macOS 유니버설 .dmg (임시 서명, 배포 서명·공증은 docs/platform/packaging.md)
-./scripts/package_windows.sh       # Windows 설치 프로그램 .exe와 .zip (Git Bash에서)
+./scripts/package_windows.sh       # Windows .msix(Store용)와 설치 프로그램 .exe·.zip (Git Bash에서)
 ```
 
 선택 기능: `--features sdr`(HackRF·SoapySDR로 셀룰러 업링크 에너지). 개발 도구 `tacet-devtools`는 관측을 녹화하고(`record`)
