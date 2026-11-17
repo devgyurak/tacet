@@ -58,6 +58,9 @@ def problems(path: str, store: bool) -> list[str]:
 
 
 def main(argv: list[str]) -> int:
+    # Windows 실행기의 콘솔 인코딩(cp1252)은 한국어를 못 찍는다 — scripts/verify.sh의 PYTHONUTF8과 같은 이유.
+    for stream in (sys.stdout, sys.stderr):
+        stream.reconfigure(encoding="utf-8")
     paths = [arg for arg in argv if not arg.startswith("--")]
     if len(paths) != 1:
         print(__doc__, file=sys.stderr)
