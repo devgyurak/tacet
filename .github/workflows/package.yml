@@ -1,0 +1,63 @@
+name: package
+
+# 묶음 설정(electron-builder, MSIX 매니페스트, 묶음 스크립트)을 바꾼 PR에서 Windows 배포 파일이 실제로 만들어지는지 본다.
+# 릴리스(release.yml)는 태그에서만 돌아서, 여기서 미리 잡지 않으면 묶음 오류를 릴리스 때 처음 알게 된다.
+# 서명·공증과 Store 제출은 하지 않는다. 비밀값을 쓰지 않는다.
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - desktop/package.json
+      - desktop/package-lock.json
+      - desktop/build/**
+      - scripts/package_windows.sh
+      - scripts/check_msix.py
+      - .github/workflows/package.yml
+      - .github/workflows/release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: package-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: package (windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+
+      - name: Rust 툴체인 (고정)
+        run: rustup toolchain install && rustup target add x86_64-pc-windows-msvc
+
+      - name: cargo 의존성 캐시
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: release
+          save-if: false
+
+      - name: 백엔드·화면 빌드와 배포 파일
+        run: ./scripts/package_windows.sh
+
+      - name: MSIX 확인
+        run: python scripts/check_msix.py "$(ls target/release/bundle/*.msix)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-package
+          path: target/release/bundle/*.msix
+          if-no-files-found: error
+          retention-days: 7

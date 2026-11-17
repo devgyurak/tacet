@@ -6,7 +6,9 @@ name: release
 #   2. main에 병합된 커밋에 태그를 단다:  git tag vX.Y.Z origin/main && git push origin vX.Y.Z
 #
 # macOS .dmg는 Developer ID로 서명하고 공증한다. 인증서·공증 키는 저장소가 아니라 CI 비밀값으로만 받는다(AGENTS.md §7,
-# docs/platform/packaging.md). Windows 설치 파일은 아직 서명하지 않는다(TODO(phase2.9)).
+# docs/platform/packaging.md). Windows 표준 배포는 Microsoft Store의 MSIX다 — 여기서 만든 .msix를 Partner Center에 올리면
+# Microsoft가 서명한다(작업 산출물 windows-store, 릴리스 파일에는 넣지 않는다). Store를 쓸 수 없는 PC용 .exe·.zip은 서명이
+# 없다(TODO(phase2.9)).
 # 릴리스 노트는 PR 라벨로 분류한다(.github/release.yml, commit 스킬 §7).
 
 on:
@@ -79,8 +81,26 @@ jobs:
           key: release
           save-if: false
 
-      - name: 백엔드·화면 빌드와 설치 파일
+      # Partner Center 제품 ID(공개 값)는 저장소 변수(vars)로 받는다. 없으면 Store에 올릴 수 없는 시험용 .msix가 나온다.
+      - name: 백엔드·화면 빌드와 배포 파일
+        env:
+          TACET_APPX_IDENTITY_NAME: ${{ vars.TACET_APPX_IDENTITY_NAME }}
+          TACET_APPX_PUBLISHER: ${{ vars.TACET_APPX_PUBLISHER }}
+          TACET_APPX_PUBLISHER_DISPLAY_NAME: ${{ vars.TACET_APPX_PUBLISHER_DISPLAY_NAME }}
         run: ./scripts/package_windows.sh
+
+      - name: MSIX 확인
+        env:
+          STORE_PUBLISHER: ${{ vars.TACET_APPX_PUBLISHER }}
+          STORE_IDENTITY_NAME: ${{ vars.TACET_APPX_IDENTITY_NAME }}
+        run: |
+          msix="$(ls target/release/bundle/*.msix)"
+          if [ -n "$STORE_PUBLISHER" ] || [ -n "$STORE_IDENTITY_NAME" ]; then
+            python scripts/check_msix.py "$msix" --store
+          else
+            echo "::warning::Partner Center 제품 ID(vars.TACET_APPX_*)가 없어 Store에 올릴 수 없는 시험용 .msix다"
+            python scripts/check_msix.py "$msix"
+          fi
 
       # 백엔드가 이 OS에서 뜨는지: 설정 파일이 없으면 한국어 오류로 끝나야 한다.
       - name: 백엔드 실행 확인
@@ -107,6 +127,14 @@ jobs:
             target/release/bundle/*.zip
           if-no-files-found: error
           retention-days: 7
+
+      # Store 제출용. 서명이 없어 직접 설치할 수 없으므로 GitHub 릴리스 파일에는 넣지 않는다.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-store
+          path: target/release/bundle/*.msix
+          if-no-files-found: error
+          retention-days: 30
 
   build-macos:
     name: build (macos)
@@ -245,12 +273,13 @@ jobs:
             echo
             echo "| OS | 파일 |"
             echo "|---|---|"
-            echo "| Windows 11 (x64) 설치 프로그램 | \`tacet-${{ needs.check.outputs.version }}-win-x64.exe\` |"
-            echo "| Windows 11 (x64) 압축 파일 | \`tacet-${{ needs.check.outputs.version }}-win-x64.zip\` |"
+            echo "| Windows 11 (x64) | Microsoft Store(표준, 게시 준비 중) |"
+            echo "| Windows 11 (x64) 설치 프로그램 — Store를 쓸 수 없는 PC | \`tacet-${{ needs.check.outputs.version }}-win-x64.exe\` |"
+            echo "| Windows 11 (x64) 압축 파일 — Store를 쓸 수 없는 PC | \`tacet-${{ needs.check.outputs.version }}-win-x64.zip\` |"
             echo "| macOS (Apple 실리콘·Intel) | \`tacet-${{ needs.check.outputs.version }}-mac-universal.dmg\` |"
             echo
-            echo "> macOS 파일은 Developer ID로 서명하고 Apple 공증을 받았다. Windows 파일은 아직 서명하지 않아(Authenticode 없음)"
-            echo "> SmartScreen이 경고할 수 있다. 실제 시험장 적용 전에 주관 기관 승인과 법률 검토가 필요하다. 무결성은 \`SHA256SUMS.txt\`로 확인한다."
+            echo "> macOS 파일은 Developer ID로 서명하고 Apple 공증을 받았다. Windows는 Microsoft Store 판이 표준이고(Microsoft 서명),"
+            echo "> 여기 올린 .exe·.zip은 서명이 없어(Authenticode 없음) SmartScreen이 경고할 수 있다. 실제 시험장 적용 전에 주관 기관 승인과 법률 검토가 필요하다. 무결성은 \`SHA256SUMS.txt\`로 확인한다."
             echo ">"
             echo "> 라이선스: PolyForm Noncommercial 1.0.0 + 공식 배포본 추가 허가(\`LICENSE\`). 이 릴리스 파일은 상업 목적을 포함해 누구나 쓸 수 있고, 수정한 판은 비상업 목적으로만 쓸 수 있다."
             echo

@@ -3,7 +3,7 @@
   "productName": "Tacet",
   "version": "0.1.1",
   "private": true,
-  "description": "Tacet(시험장 무선 기기 탐지기) 화면(Electron). 판정은 Rust 백엔드가 한다.",
+  "description": "시험장 무선 기기 탐지기 — 교실에 나타난 휴대폰·스마트 안경의 무선 흔적을 감지해 감독관에게 확인 필요를 알린다.",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
@@ -72,7 +72,24 @@
           "arch": [
             "x64"
           ]
+        },
+        {
+          "target": "appx",
+          "arch": [
+            "x64"
+          ]
         }
+      ]
+    },
+    "appx": {
+      "artifactName": "tacet-${version}-win-${arch}.msix",
+      "customManifestPath": "appxmanifest.xml",
+      "applicationId": "Tacet",
+      "displayName": "Tacet",
+      "publisherDisplayName": "devgyurak",
+      "backgroundColor": "#1b1b1a",
+      "languages": [
+        "ko-KR"
       ]
     },
     "nsis": {
