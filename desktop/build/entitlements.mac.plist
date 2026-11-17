@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Hardened Runtime 자격(docs/platform/packaging.md). 공증을 받으려면 Hardened Runtime이 필요하다(설계 §7.3).
+  앞의 세 줄은 electron-builder 기본값 그대로다 — Electron(V8)이 JIT와 자체 라이브러리를 쓴다.
+  위치: Hardened Runtime에서는 이 자격이 없으면 위치 권한을 요청할 수 없고, CoreWLAN은 위치 권한이 있어야 BSSID를 준다
+  (설계 §7.2). 백엔드(Resources/bin/tacet)가 위치를 요청하므로 상속용 파일(entitlements.mac.inherit.plist)에도 같은 값을 둔다.
+  블루투스는 Hardened Runtime 자격이 따로 없다(App Sandbox를 쓰지 않는다).
+-->
+<plist version="1.0">
+  <dict>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <key>com.apple.security.personal-information.location</key>
+    <true/>
+  </dict>
+</plist>
