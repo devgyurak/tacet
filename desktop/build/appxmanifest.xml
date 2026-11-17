@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MSIX(Microsoft Store) 매니페스트 틀(docs/platform/packaging.md). electron-builder 기본 틀과 같고 권한만 직접 적는다 —
+  electron-builder의 appx.capabilities 목록에 bluetooth가 없다.
+  - runFullTrust: Electron 데스크톱 앱과 그 자식 프로세스(백엔드 tacet.exe)가 Win32 API를 쓴다.
+  - location: Windows 11 24H2부터 Wi-Fi BSSID는 위치 권한이 있어야 준다. 묶음 앱은 매니페스트에 선언해야 위치 권한을
+    받을 수 있다(설계 §7.1).
+  - bluetooth: BLE 광고 수신(WinRT). 연결하지 않는다(AGENTS.md §3.1).
+  TODO(field-unverified): 묶음 앱으로 실행할 때 BLE·Wi-Fi BSSID 수집이 되는지 Windows 11 실기에서 확인한다.
+-->
+<Package
+   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
+  <Identity Name="${identityName}"
+    ProcessorArchitecture="${arch}"
+    Publisher="${publisher}"
+    Version="${version}" />
+  <Properties>
+    <DisplayName>${displayName}</DisplayName>
+    <PublisherDisplayName>${publisherDisplayName}</PublisherDisplayName>
+    <Description>${description}</Description>
+    <Logo>${logo}</Logo>
+  </Properties>
+  <Resources>
+    ${resourceLanguages}
+  </Resources>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="${minVersion}" MaxVersionTested="${maxVersionTested}" />
+  </Dependencies>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <DeviceCapability Name="location" />
+    <DeviceCapability Name="bluetooth" />
+  </Capabilities>
+  <Applications>
+    <Application Id="${applicationId}" Executable="${executable}" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+       BackgroundColor="${backgroundColor}"
+       DisplayName="${displayName}"
+       Square150x150Logo="${square150x150Logo}"
+       Square44x44Logo="${square44x44Logo}"
+       Description="${description}">
+        ${lockScreen}
+        ${defaultTile}
+        ${splashScreen}
+      </uap:VisualElements>
+      ${extensions}
+    </Application>
+  </Applications>
+</Package>

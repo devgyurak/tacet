@@ -1,7 +1,8 @@
 # 설치 파일과 서명(Phase 2.9)
 
 - 상태: main의 `vX.Y.Z` 태그로 macOS `.dmg`(Developer ID 서명 + 공증, v0.1.1부터)와 Windows 설치 프로그램(`.exe`)·`.zip`을
-  GitHub 릴리스에 올린다. Windows Authenticode 서명은 인증서가 없어 미완.
+  GitHub 릴리스에 올리고, Windows 표준 배포인 Store용 `.msix`를 작업 산출물로 만든다. Store 게시(Partner Center 등록·제출)는
+  미완. `.exe`의 Authenticode 서명은 인증서가 없어 미완.
 
 ## 테스트 (`.github/workflows/ci.yml`)
 
@@ -64,6 +65,28 @@ ASCII로 둔다. 창 제목에는 "Tacet — 시험장 무선 기기 탐지기"�
 
 ## Windows
 
-`scripts/package_windows.sh`(Git Bash)가 `x86_64-pc-windows-msvc` 백엔드를 빌드하고 electron-builder로 NSIS 설치 프로그램
-(`.exe`)과 `.zip`을 만든다. Authenticode 서명은 아직 없다 — `TODO(phase2.9)`. 시험 기간 중
-자동 업데이트는 넣지 않는다.
+**Windows 표준 배포는 Microsoft Store의 MSIX다**(사용자 결정 2026-11-17). Store에 올린 묶음은 Microsoft가 서명하므로
+Authenticode 인증서 없이 SmartScreen 경고 없이 설치된다. `scripts/package_windows.sh`(Git Bash)가 `x86_64-pc-windows-msvc`
+백엔드를 빌드하고 electron-builder로 세 가지를 만든다.
+
+| 파일 | 쓰임 |
+|---|---|
+| `tacet-<버전>-win-x64.msix` | **표준.** Partner Center에 올린다(릴리스 작업 산출물 `windows-store`). 서명이 없어 직접 설치용이 아니므로 GitHub 릴리스 파일에는 넣지 않는다 |
+| `tacet-<버전>-win-x64.exe`(NSIS) · `.zip` | Store를 쓸 수 없는 PC(Store를 막은 기관 노트북, 인터넷 없는 설치)용. Authenticode 서명이 없다 — `TODO(phase2.9)` |
+
+- **매니페스트**: `desktop/build/appxmanifest.xml`(electron-builder 기본 틀 + 권한). 권한은 `runFullTrust`(Electron과 백엔드가
+  Win32 API를 쓴다, 제한 권한이라 제출 때 사유를 적는다), `location`(Windows 11 24H2부터 Wi-Fi BSSID에 위치 권한이 필요하고,
+  묶음 앱은 매니페스트에 선언해야 받을 수 있다), `bluetooth`(BLE 광고 수신, 연결하지 않는다). electron-builder의
+  `appx.capabilities` 목록에 `bluetooth`가 없어 틀을 직접 둔다. 묶음 앱으로 실행할 때 수집이 되는지는 실기 미확인 —
+  `TODO(field-unverified)`.
+- **타일 이미지**: `desktop/build/appx/`(앱 아이콘 판 `#1b1b1a` 위에 반전 표식, 작은 크기는 `tacet-symbol-small` 모양).
+- **제품 ID**: Partner Center의 `Package/Identity/Name`·`Publisher`·`PublisherDisplayName`은 공개 값이라 저장소 변수
+  `TACET_APPX_IDENTITY_NAME`·`TACET_APPX_PUBLISHER`·`TACET_APPX_PUBLISHER_DISPLAY_NAME`(`gh variable set`)으로 넣는다. 없으면
+  시험용 기본값(`CN=ms`)으로 묶이고 그 `.msix`는 Store에 올릴 수 없다 — 릴리스가 경고를 남긴다.
+- **확인**: `scripts/check_msix.py`가 권한·타일 이미지(electron-builder 견본 그림이 아닌지)·제품 ID를 본다. 묶음 설정을 바꾼
+  PR은 `.github/workflows/package.yml`이 Windows에서 실제로 묶어 본다.
+- **자동 업데이트**: Store 앱은 Store가 자동으로 업데이트하고 게시자가 막을 수 없다. 그래서 시험 기간에는 Store에 새 버전을
+  게시하지 않는다(AGENTS.md §7). 기관이 Store 자동 업데이트를 끄려면 Windows 정책으로 끈다.
+- **Store 제출**(사람이 Partner Center에서): 무료·시장, 연령 등급(IARC), 한국어 소개·스크린샷·로고, 개인정보 처리방침 주소
+  (`docs/privacy.md`), `runFullTrust` 사유, 추가 사용권 조건(`LICENSE` 주소 — 지정하지 않으면 Microsoft 표준 앱 사용권 조건만
+  보인다. Store 조건과 `LICENSE`의 관계는 법률 검토 대상). 심사는 보통 영업일 며칠.

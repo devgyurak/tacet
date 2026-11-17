@@ -83,8 +83,8 @@ The **licensor** is the individual or entity offering these terms, and the **sof
 라이선스 제공자(devgyurak)는 위 PolyForm Noncommercial License 1.0.0에 더해 다음을 허가한다. 이 추가 허가는 사용 범위를
 넓히기만 하고 위 라이선스의 어떤 조건도 좁히지 않는다.
 
-1. **공식 배포본**은 라이선스 제공자가 <https://github.com/devgyurak/tacet/releases>에 게시한 설치 파일·압축 파일, 그리고
-   그 릴리스 태그의 소스 코드를 **수정하지 않고** 빌드한 결과물을 말한다.
+1. **공식 배포본**은 라이선스 제공자가 <https://github.com/devgyurak/tacet/releases>에 게시한 설치 파일·압축 파일, 라이선스
+   제공자가 Microsoft Store에 게시한 Tacet 앱, 그리고 그 릴리스 태그의 소스 코드를 **수정하지 않고** 빌드한 결과물을 말한다.
 2. 누구든 공식 배포본을 수정하지 않은 채로 **상업 목적을 포함한 어떤 목적으로든** 설치하고 실행하고 사용할 수 있다. 앱이
    제공하는 방법으로 설정(교실·자리·교실 보정값·예외 기기 목록 등)을 바꾸는 것은 수정으로 보지 않는다.
 3. 누구든 공식 배포본을 수정하지 않은 채로 **무료로** 재배포할 수 있다. 이때 이 파일 전체(위 라이선스, `Required Notice:`

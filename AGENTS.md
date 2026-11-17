@@ -399,10 +399,12 @@ fn given_each_glasses_vendor_id_when_scored_then_no_vendor_misses_r1a() {
 - **CI**(`.github/workflows/ci.yml`)는 `./scripts/verify.sh`를 Windows · macOS · Linux에서 돌린다. 리눅스는 배포
   대상이 아니지만 개발용 빌드와 devtools를 지킨다. Rust 툴체인과 시스템 라이브러리 단계는 `Cargo.toml`이 생기는
   순간 켜진다.
-- **배포**(Phase 2.9) — Windows 설치 프로그램(`.exe`, Authenticode 서명), macOS `.dmg`(Developer ID 서명 + 공증 +
+- **배포**(Phase 2.9) — Windows는 **Microsoft Store의 MSIX가 표준**(Microsoft 서명, 사용자 결정 2026-11-17)이고 Store를 쓸 수
+  없는 PC용 설치 프로그램(`.exe`, Authenticode 서명 미완)을 함께 낸다. macOS `.dmg`(Developer ID 서명 + 공증 +
   Hardened Runtime). `scripts/package_macos.sh`·`scripts/package_windows.sh`가 Rust 백엔드를 빌드해 Electron 앱에 넣고
   electron-builder로 묶으며 서명 정보는 환경 변수로만 받는다(`docs/platform/packaging.md`). **서명 인증서·키·Apple 계정 정보는 저장소에 두지 않고 CI 비밀값으로만 쓴다.** 수동성 스캔이 추적된
-  인증서 파일(`.p12`, `.pfx`, `.p8` …)을 잡는다. 시험 기간 중 자동 업데이트는 끈다(버전 고정).
+  인증서 파일(`.p12`, `.pfx`, `.p8` …)을 잡는다. 시험 기간 중에는 버전을 고정한다: 앱에 자동 업데이트를 넣지 않고, Store
+  앱은 Store가 업데이트를 관리해 게시자가 끌 수 없으므로 시험 기간에는 Store에 새 버전을 게시하지 않는다.
 - **커버리지 하한은 CI 전용이 아니고 끄지 않는다.** `check_agent_config.py`는 §5.9와 `scripts/verify.sh`의 하한이
   다르면 실패한다.
 - **에이전트 설정**(`.github/workflows/agents.yml`)은 `scripts/check_agent_config.py`와 훅 자체 테스트를 돌린다.
