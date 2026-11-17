@@ -12,7 +12,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.98"
 # 라이선스는 아직 정하지 않았다(docs/STATUS.md). 정할 때까지 어떤 패키지도 배포하지 않는다.

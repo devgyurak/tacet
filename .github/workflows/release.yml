@@ -5,7 +5,8 @@ name: release
 #   1. develop → main 릴리스 PR에서 Cargo.toml의 [workspace.package] version을 X.Y.Z로 올린다.
 #   2. main에 병합된 커밋에 태그를 단다:  git tag vX.Y.Z origin/main && git push origin vX.Y.Z
 #
-# 결과물은 서명하지 않는다 — 인증서는 저장소가 아니라 CI 비밀값으로만 받는다(AGENTS.md §7, TODO(phase2.9)).
+# macOS .dmg는 Developer ID로 서명하고 공증한다. 인증서·공증 키는 저장소가 아니라 CI 비밀값으로만 받는다(AGENTS.md §7,
+# docs/platform/packaging.md). Windows 설치 파일은 아직 서명하지 않는다(TODO(phase2.9)).
 # 릴리스 노트는 PR 라벨로 분류한다(.github/release.yml, commit 스킬 §7).
 
 on:
@@ -129,8 +130,48 @@ jobs:
           key: release
           save-if: false
 
-      # Apple 실리콘과 Intel을 함께 담은 유니버설 앱과 .dmg. 배포 서명 없이 임시(ad-hoc) 서명만 한다.
-      - name: 백엔드·화면 빌드와 dmg
+      # 서명용 임시 키체인: 비밀값의 .p12와 Apple Developer ID 중간 인증서(G2)를 넣는다. G2는 실행기에도 electron-builder에도
+      # 없어서, 빠지면 인증서가 "유효하지 않음"으로 보이고 서명하지 못한다. 받은 G2는 고정한 SHA-256 지문으로 확인한다.
+      - name: 서명 키체인
+        env:
+          MAC_CERT_P12: ${{ secrets.MAC_CERT_P12 }}
+          MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          NOTARY_KEY: ${{ secrets.APPLE_API_KEY }}
+          NOTARY_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          NOTARY_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: |
+          for name in MAC_CERT_P12 MAC_CERT_PASSWORD NOTARY_KEY NOTARY_KEY_ID NOTARY_ISSUER; do
+            [ -n "${!name}" ] || { echo "::error::서명·공증 비밀값이 비어 있다: $name"; exit 1; }
+          done
+          umask 077
+          keychain="$RUNNER_TEMP/tacet-sign.keychain-db"
+          password="$(openssl rand -base64 24)"
+          echo "::add-mask::$password"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          curl -fsSL -o "$RUNNER_TEMP/DeveloperIDG2CA.cer" https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
+          echo "f16cd3c54c7f83cea4bf1a3e6a0819c8aaa8e4a1528fd144715f350643d2df3a  $RUNNER_TEMP/DeveloperIDG2CA.cer" \
+            | shasum -a 256 -c -
+          security import "$RUNNER_TEMP/DeveloperIDG2CA.cer" -k "$keychain"
+          printf '%s' "$MAC_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$keychain" -P "$MAC_CERT_PASSWORD" -T /usr/bin/codesign
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$password" "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          identity="$(security find-identity -v -p codesigning "$keychain" \
+            | grep -o '"Developer ID Application: [^"]*"' | head -n 1 | tr -d '"')"
+          [ -n "$identity" ] || { echo "::error::키체인에 유효한 Developer ID Application 인증서가 없다"; exit 1; }
+          echo "TACET_SIGN_IDENTITY=$identity" >> "$GITHUB_ENV"
+          printf '%s' "$NOTARY_KEY" > "$RUNNER_TEMP/notary.p8"
+          echo "APPLE_API_KEY=$RUNNER_TEMP/notary.p8" >> "$GITHUB_ENV"
+
+      # Apple 실리콘과 Intel을 함께 담은 유니버설 앱과 .dmg. Developer ID 서명 + Hardened Runtime, 앱과 .dmg 모두 공증하고
+      # 티켓을 붙인다(scripts/package_macos.sh).
+      - name: 백엔드·화면 빌드, 서명, 공증
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
         run: ./scripts/package_macos.sh
 
       - name: 실행 확인
@@ -138,7 +179,17 @@ jobs:
           app="target/release/bundle/mac-universal/Tacet.app"
           lipo -archs "$app/Contents/Resources/bin/tacet" | grep -q x86_64
           lipo -archs "$app/Contents/Resources/bin/tacet" | grep -q arm64
-          codesign --verify --deep "$app"
+          backend="$app/Contents/Resources/bin/tacet"
+          # 서명·공증: 앱 전체 서명, 백엔드의 Hardened Runtime과 위치 자격(없으면 Wi-Fi BSSID가 빈다), 티켓, Gatekeeper 판정.
+          codesign --verify --deep --strict --verbose=2 "$app"
+          flags="$(codesign -dv "$backend" 2>&1)"
+          grep -q 'flags=.*runtime' <<<"$flags"
+          entitlements="$(codesign -d --entitlements - --xml "$backend" 2>/dev/null)"
+          grep -q 'com.apple.security.personal-information.location' <<<"$entitlements"
+          xcrun stapler validate "$app"
+          xcrun stapler validate target/release/bundle/*.dmg
+          spctl -a -vvv -t exec "$app"
+          spctl -a -vvv -t open --context context:primary-signature target/release/bundle/*.dmg
           set +e
           message="$("$app/Contents/Resources/bin/tacet" --config 없는-설정.toml 2>&1)"
           code=$?
@@ -156,6 +207,12 @@ jobs:
           path: target/release/bundle/*.dmg
           if-no-files-found: error
           retention-days: 7
+
+      - name: 서명 키체인 정리
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/tacet-sign.keychain-db" 2> /dev/null || true
+          rm -f "$RUNNER_TEMP/notary.p8" "$RUNNER_TEMP/cert.p12"
 
   publish:
     name: GitHub 릴리스
@@ -192,8 +249,8 @@ jobs:
             echo "| Windows 11 (x64) 압축 파일 | \`tacet-${{ needs.check.outputs.version }}-win-x64.zip\` |"
             echo "| macOS (Apple 실리콘·Intel) | \`tacet-${{ needs.check.outputs.version }}-mac-universal.dmg\` |"
             echo
-            echo "> 서명하지 않은 빌드다(Windows Authenticode, macOS Developer ID·공증 없음). macOS CoreWLAN은 서명된 번들에서만"
-            echo "> Wi-Fi BSSID를 준다. 실제 시험장 적용 전에 주관 기관 승인과 법률 검토가 필요하다. 무결성은 \`SHA256SUMS.txt\`로 확인한다."
+            echo "> macOS 파일은 Developer ID로 서명하고 Apple 공증을 받았다. Windows 파일은 아직 서명하지 않아(Authenticode 없음)"
+            echo "> SmartScreen이 경고할 수 있다. 실제 시험장 적용 전에 주관 기관 승인과 법률 검토가 필요하다. 무결성은 \`SHA256SUMS.txt\`로 확인한다."
             echo ">"
             echo "> 라이선스: PolyForm Noncommercial 1.0.0 + 공식 배포본 추가 허가(\`LICENSE\`). 이 릴리스 파일은 상업 목적을 포함해 누구나 쓸 수 있고, 수정한 판은 비상업 목적으로만 쓸 수 있다."
             echo
